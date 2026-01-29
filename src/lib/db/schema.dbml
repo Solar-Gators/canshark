@@ -1,0 +1,79 @@
+Project canshark {
+  database_type: 'SQLite'
+  Note: 'Web-based CAN bus debugger interface'
+}
+
+Table _canshark_migration {
+  Note: 'Database migrations, applied in ascending order of "version"'
+
+  version integer [pk, not null, note: 'Defines order migrations are applied in']
+  description text [not null]
+  installed_on text [not null, note: 'timestamp of last application attempt']
+  success numeric [not null, note: 'boolean']
+}
+
+Table dbc {
+  Note: 'Top-level DBC declaration'
+
+  id text [pk, not null, note: 'User-defined unique ID for DBC']
+  version text [not null, note: 'Semver schema version']
+  name text [not null]
+  description text [not null]
+  source text [note: 'org/repo for GitHub, NULL for imports']
+  updated text [not null, note: 'timestamp DBC was last updated']
+}
+
+Table signal {
+  name text [not null]
+
+  ecu_id integer [not null]
+  dbc_id text [not null]
+
+  comment text [not null]
+  bit_start integer [not null]
+  bit_length integer [not null]
+  byte_order signal_byte_order [not null]
+  signed integer [not null, note: 'boolean']
+  scale real [not null, note: 'out = (scale * in) + offset']
+  offset real [not null, note: 'out = (scale * in) + offset']
+  min real [note: 'expected min value']
+  max real [note: 'expected max value']
+  unit text [not null, note: 'measurement unit']
+  receiver text [not null, note: 'receiving ECU']
+
+  mux_name text [note: 'Pairwise nullable with "mux_value"']
+  mux_value integer [note: 'Pairwise nullable with "mux_name"']
+
+  indexes {
+    (name, ecu_id, dbc_id) [pk, name: 'pk_signal']
+  }
+
+  Note: 'Signal transmitted within a CAN message from a single ECU' 
+}
+
+Table message {
+  ecu_id integer [not null, note: 'ECU CAN ID']
+  dbc_id text [not null]
+
+  name text [not null]
+  comment text [not null]
+  length integer [not null]
+  sender text [not null]
+
+  indexes {
+    (ecu_id, dbc_id) [pk, name: 'pk_message']
+    (name, dbc_id) [unique]
+  }
+
+  Note: 'Message format transmitted by a single ECU'
+}
+
+Enum signal_byte_order {
+  Motorola
+  Intel
+}
+
+Ref: message.dbc_id > dbc.id
+
+Ref: signal.(dbc_id, ecu_id) > message.(dbc_id, ecu_id)
+Ref: signal.(mux_name, dbc_id, ecu_id) > signal.(name, dbc_id, ecu_id)

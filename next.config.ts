@@ -1,7 +1,7 @@
-import withBundleAnalyzer from '@next/bundle-analyzer';
+// import withBundleAnalyzer from '@next/bundle-analyzer';
 import { type NextConfig } from 'next';
 
-import { env } from './env.mjs';
+// import { env } from './env.mjs';
 
 const config: NextConfig = {
     headers: () => {
@@ -32,4 +32,4 @@ const config: NextConfig = {
     rewrites: () => [],
 };
 
-export default env.ANALYZE ? withBundleAnalyzer({ enabled: env.ANALYZE })(config) : config;
+export default config; // env.ANALYZE ? withBundleAnalyzer({ enabled: env.ANALYZE })(config) : config;

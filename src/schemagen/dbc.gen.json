@@ -1,0 +1,169 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "endianness": {
+      "enum": [
+        "big",
+        "little"
+      ],
+      "$id": "#endianness"
+    },
+    "name": {
+      "type": "string",
+      "$id": "#name",
+      "pattern": "^[0-9A-Za-z_]{1,23}$"
+    },
+    "binary_string": {
+      "type": "string",
+      "$id": "#binary_string",
+      "pattern": "^0b[01]+$",
+      "description": "A binary string preceded by \"0b\""
+    },
+    "hex_string": {
+      "type": "string",
+      "$id": "#hex_string",
+      "pattern": "^0x[0-9A-Fa-f]+$",
+      "description": "A hex number preceded by \"0x\""
+    },
+    "octal_string": {
+      "type": "string",
+      "$id": "#octal_string",
+      "pattern": "^0o[0-8]+",
+      "description": "An octal number preceded by \"0o\""
+    },
+    "int_string": {
+      "$id": "#int_string",
+      "oneOf": [
+        {
+          "$ref": "#binary_string"
+        },
+        {
+          "$ref": "#hex_string"
+        },
+        {
+          "$ref": "#octal_string"
+        }
+      ],
+      "description": "Integer string accepting prefixed binary, hex, or octal"
+    },
+    "flexible_int": {
+      "$id": "#flexible_int",
+      "oneOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "$ref": "#int_string"
+        }
+      ],
+      "description": "Flexible integer accepting integer or (prefixed) binary, hex, or octal string"
+    },
+    "signal": {
+      "type": "object",
+      "$id": "#signal",
+      "properties": {
+        "name": {
+          "$ref": "#name"
+        },
+        "comment": {
+          "type": "string"
+        },
+        "bitStart": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "bitLength": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "endianness": {
+          "$ref": "#endianness"
+        },
+        "signed": {
+          "type": "boolean"
+        },
+        "scale": {
+          "type": "number",
+          "default": 1
+        },
+        "offset": {
+          "type": "number",
+          "default": 0
+        },
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string",
+          "default": ""
+        },
+        "receiver": {
+          "$ref": "#name",
+          "default": "Vector__XXX"
+        },
+        "mux": {
+          "type": "array",
+          "items": [
+            {
+              "$ref": "#name"
+            },
+            {
+              "$ref": "#flexible_int"
+            }
+          ],
+          "description": "Selects a multiplexor. This signal is valid when the named mux value matches the given flexible int value."
+        }
+      }
+    }
+  },
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "data": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "message"
+              },
+              "id": {
+                "type": "integer"
+              },
+              "comment": {
+                "type": "string"
+              },
+              "name": {
+                "$ref": "#name"
+              },
+              "length": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 1785
+              },
+              "sender": {
+                "$ref": "#name"
+              },
+              "signals": {
+                "type": "array",
+                "items": {
+                  "$ref": "#signal"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  }
+}
